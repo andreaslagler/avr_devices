@@ -28,6 +28,7 @@ enum class MCP23xxxPinType
     UNUSED, // Unused pin
     OUTPUT, // Generic output pin
     INPUT, // Generic input pin
+    INPUT_PU, // Generic input pin with pull-up enabled
     SWITCH, // Push-button switch
     ROTENC_PHASE_A, // Rotary encoder phase A generating the interrupt
     ROTENC_PHASE_B, // Rotary encoder phase B indicating the direction of rotation
@@ -109,6 +110,26 @@ class MCP23xxx
     };
 
     /**
+    @brief Pin configuration class (Generic input pin with pull-up enabled)
+    @tparam PinOnDevice Register-level driver class for underlying physical pin on actual MCP23xxx device implementing static methods readINTCAP(), readGPIO() and writeOLAT(bool)
+    */
+    template <typename PinOnDevice>
+    class Pin<PinOnDevice, MCP23xxxPinType::INPUT_PU> : PinOnDevice
+    {
+        public:
+        
+        static constexpr bool s_IODIRBit = true;
+        static constexpr bool s_IPOLBit = false;
+        static constexpr bool s_GPINTENBit = false;
+        static constexpr bool s_DEFVALBit = false;
+        static constexpr bool s_INTCONBit = false;
+        static constexpr bool s_GPPUBit = true;
+
+        static void notify() __attribute__((always_inline))
+        {} // Dummy
+    };
+
+    /**
     @brief Pin configuration class (Push-button switch)
     @tparam PinOnDevice Register-level driver class for underlying physical pin on actual MCP23xxx device implementing static methods readINTCAP(), readGPIO() and writeOLAT(bool)
     */
@@ -139,7 +160,7 @@ class MCP23xxx
         {
             if (PinOnDevice::readINTCAP())
             {
-                s_subject.notifiyObserver();
+                s_subject.notifyObserver();
             }
         }
     };
@@ -177,7 +198,7 @@ class MCP23xxx
             // Notify observer on rising edge of phase A
             if (PinOnDevice::readINTCAP())
             {
-                s_subject.notifiyObserver();
+                s_subject.notifyObserver();
             }
         }
     };

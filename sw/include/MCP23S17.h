@@ -426,6 +426,30 @@ class MCP23S17 : MCP23xxx
         readRegisterPair(INTCAPA);
     }
     
+    /**
+    @brief Read I/O port A+B
+    */
+    static uint16_t read()
+    {
+        return readRegisterPair(GPIOA);
+    }
+    
+    /**
+    @brief Read I/O port A
+    */
+    static uint8_t readA()
+    {
+        return readRegister(GPIOA);
+    }
+    
+    /**
+    @brief Read I/O port B
+    */
+    static uint8_t readB()
+    {
+        return readRegister(GPIOB);
+    }
+       
     private:
     
     static constexpr void checkConfig()
