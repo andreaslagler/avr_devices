@@ -285,13 +285,11 @@ class HD44780_Configuration_74HC595
     @param data Byte to be sent to LCD
     @param RS flag indicating if RS pin should be driven high
     */
-    static void write4Bit(const uint8_t data, const bool RS = false)
+    static void write4Bit(const uint8_t data, const bool rs = false)
     {
         // Send data bits and RS bit
         const union
         {
-            uint8_t byte;
-
             struct
             {
                 uint8_t dummy:2;
@@ -299,16 +297,17 @@ class HD44780_Configuration_74HC595
                 bool backlight:1; // TODO Entfernen, erfordert HW Änderung wegen RS Pin!
                 uint8_t DB:4;
             } data;
+
+            uint8_t byte;
         }
         buffer =
         {
-            .data =
             {
-                .dummy = 0,
-                .RS = RS,
-                .backlight = false,
-                .DB = data
-            }
+                0, // data.dummy 
+                rs, // data.RS
+                false, // data.backlight 
+                data // data.DB 
+            } // {union}.data
         };
         
         SPIMaster::put(buffer.byte);
