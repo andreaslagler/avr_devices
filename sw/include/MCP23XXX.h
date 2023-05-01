@@ -20,7 +20,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "Subject.h"
+#include <functional>
 
 ///@brief Pin type of MCP23xxx pins
 enum class MCP23xxxPinType
@@ -139,12 +139,14 @@ class MCP23xxx
         public:
         
         /**
-        Register an observer to be notified on a button push
-        @param observer Observer to be registered
+        Register a callback for transition of rotary encoder phase A
+        @tparam Callback Type of callback to be registered
+        @param callback Callback to be registered
         */
-        static void registerObserver(const typename Subject<void>::Observer& observer)
+        template <typename Callback>
+        static void registerCallback(Callback&& callback)
         {
-            s_subject.registerObserver(observer);
+            s_callback = callback;
         }
         
         static constexpr bool s_IODIRBit = true;
@@ -154,13 +156,13 @@ class MCP23xxx
         static constexpr bool s_INTCONBit = false;
         static constexpr bool s_GPPUBit = true;
 
-        static Subject<void> s_subject;
+        static std::function<void()> s_callback;
         
         static void notify() __attribute__((always_inline))
         {
             if (PinOnDevice::readINTCAP())
             {
-                s_subject.notifyObserver();
+                s_callback();
             }
         }
     };
@@ -176,12 +178,14 @@ class MCP23xxx
         public:
         
         /**
-        Register an observer to be notified on a transition of rotary encoder phase A
-        @param observer Observer to be registered
+        Register a callback for transition of rotary encoder phase A
+        @tparam Callback Type of callback to be registered
+        @param callback Callback to be registered
         */
-        static void registerObserver(const typename Subject<void>::Observer& observer)
+        template <typename Callback>
+        static void registerCallback(Callback&& callback)
         {
-            s_subject.registerObserver(observer);
+            s_callback = callback;
         }
         
         static constexpr bool s_IODIRBit = true;
@@ -191,14 +195,14 @@ class MCP23xxx
         static constexpr bool s_INTCONBit = false;
         static constexpr bool s_GPPUBit = true;
 
-        static Subject<void> s_subject;
+        static std::function<void()> s_callback;
         
         static void notify() __attribute__((always_inline))
         {
             // Notify observer on rising edge of phase A
             if (PinOnDevice::readINTCAP())
             {
-                s_subject.notifyObserver();
+                s_callback();
             }
         }
     };
@@ -237,10 +241,10 @@ class MCP23xxx
 
 // Static initialization
 template <typename PinOnDevice>
-Subject<void> MCP23xxx::Pin<PinOnDevice, MCP23xxxPinType::SWITCH>::s_subject;
+std::function<void()> MCP23xxx::Pin<PinOnDevice, MCP23xxxPinType::SWITCH>::s_callback;
 
 // Static initialization
 template <typename PinOnDevice>
-Subject<void> MCP23xxx::Pin<PinOnDevice, MCP23xxxPinType::ROTENC_PHASE_A>::s_subject;
+std::function<void()> MCP23xxx::Pin<PinOnDevice, MCP23xxxPinType::ROTENC_PHASE_A>::s_callback;
 
 #endif
