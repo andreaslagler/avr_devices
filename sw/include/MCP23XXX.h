@@ -20,7 +20,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <functional>
+#include <functional.h>
 
 ///@brief Pin type of MCP23xxx pins
 enum class MCP23xxxPinType
@@ -156,7 +156,7 @@ class MCP23xxx
         static constexpr bool s_INTCONBit = false;
         static constexpr bool s_GPPUBit = true;
 
-        static std::function<void()> s_callback;
+        static function<void()> s_callback;
         
         static void notify() __attribute__((always_inline))
         {
@@ -195,7 +195,7 @@ class MCP23xxx
         static constexpr bool s_INTCONBit = false;
         static constexpr bool s_GPPUBit = true;
 
-        static std::function<void()> s_callback;
+        static function<void()> s_callback;
         
         static void notify() __attribute__((always_inline))
         {
@@ -241,10 +241,10 @@ class MCP23xxx
 
 // Static initialization
 template <typename PinOnDevice>
-std::function<void()> MCP23xxx::Pin<PinOnDevice, MCP23xxxPinType::SWITCH>::s_callback;
+function<void()> MCP23xxx::Pin<PinOnDevice, MCP23xxxPinType::SWITCH>::s_callback;
 
 // Static initialization
 template <typename PinOnDevice>
-std::function<void()> MCP23xxx::Pin<PinOnDevice, MCP23xxxPinType::ROTENC_PHASE_A>::s_callback;
+function<void()> MCP23xxx::Pin<PinOnDevice, MCP23xxxPinType::ROTENC_PHASE_A>::s_callback;
 
 #endif
