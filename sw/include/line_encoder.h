@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2022  Andreas Lagler
+Copyright (C) 2023  Andreas Lagler
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,20 +15,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _74HC148_H
-#define _74HC148_H
-
-#include <stdint.h>
-#include <stdbool.h>
-#include "subject.h"
+#ifndef LINE_ENCODER_H
+#define LINE_ENCODER_H
 
 /**
-@brief Driver for 8-to-3 line priority decoder 74HC148
-@tparam Port Any 3-pin GPIOSubPort driver class implementing static methods setAsInput() and read()
-@tparam PinConfig
+@brief Driver for (2^N)-to-N line encoder (e.g. 74HC148)
+@tparam Port Any GPIOPort/GPIOSubPort driver class implementing static methods getNofPins(), setAsOutput() and read()
 */
 template <typename Port>
-class _74HC148
+class LineEncoder
 {
     public:
     /**
@@ -37,12 +32,12 @@ class _74HC148
     */
     static constexpr uint8_t getNofLines()
     {
-        return 8;
+        return 1 << nofOutputLines();
     }
 
     /**
     @brief get active input line
-    @result zero-based index of active input line (0..7)
+    @result zero-based index of active input line
     @note Maximum specified settling time is 45ns @5V, so an additional delay is not needed
     */
     static uint8_t getLine()
@@ -53,9 +48,14 @@ class _74HC148
     /// @brief Initialization
     static void init()
     {
-        static_assert(Port::getNofPins() == 3, "Invalid port configuration. Number of pins must be 3");
         Port::setAsInput();
     }
-};
+    
+    private:
+    
+    static constexpr uint8_t nofOutputLines()
+    {
+        return Port::getNofPins();
+    }};
 
 #endif
