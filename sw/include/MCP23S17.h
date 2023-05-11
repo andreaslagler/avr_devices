@@ -211,11 +211,13 @@ class MCP23S17 : MCP23xxx
     /**
     @brief Initialization
     */
-    static void init()
+    static void init(const bool intActiveHigh = true)
     {
         checkConfig(); // Will evaluate at compile time and assert in case something is wrong with the pin configuration
 
-        writeRegister(IOCON, _BV(INTPOL) | _BV(SEQOP) | _BV(MIRROR));
+        // Interrupt output active high --> set INTPOL bit
+        uint8_t valueIOCON = _BV(SEQOP) | _BV(MIRROR) | (intActiveHigh ? _BV(INTPOL) : 0);
+        writeRegister(IOCON, valueIOCON);
         
         writeRegisterPair(IODIRA,
         (Pin<MCP23S17PinIdx::B0>::s_IODIRBit ? _BV(static_cast<uint16_t>(MCP23S17PinIdx::B0)) : 0) +
