@@ -30,6 +30,7 @@ enum class MCP23xxxPinType
     INPUT, // Generic input pin
     INPUT_PU, // Generic input pin with pull-up enabled
     SWITCH, // Push-button switch
+    SWITCH_TOGGLE, // Push-button switch with interrupts for button down and button up
     ROTENC_PHASE_A, // Rotary encoder phase A generating the interrupt
     ROTENC_PHASE_B, // Rotary encoder phase B indicating the direction of rotation
 };
@@ -140,11 +141,9 @@ class MCP23xxx
         
         /**
         Register a callback for transition of rotary encoder phase A
-        @tparam Callback Type of callback to be registered
         @param callback Callback to be registered
         */
-        template <typename Callback>
-        static void registerCallback(Callback&& callback)
+        static void registerCallback(auto&& callback)
         {
             s_callback = callback;
         }
@@ -168,6 +167,39 @@ class MCP23xxx
     };
 
     /**
+    @brief Pin configuration class (Push-button switch)
+    @tparam PinOnDevice Register-level driver class for underlying physical pin on actual MCP23xxx device implementing static methods readINTCAP(), readGPIO() and writeOLAT(bool)
+    */
+    template <typename PinOnDevice>
+    class Pin<PinOnDevice, MCP23xxxPinType::SWITCH_TOGGLE> : PinOnDevice
+    {
+        public:
+        
+        /**
+        Register a callback for transition of rotary encoder phase A
+        @param callback Callback to be registered
+        */
+        static void registerCallback(auto&& callback)
+        {
+            s_callback = callback;
+        }
+        
+        static constexpr bool s_IODIRBit = true;
+        static constexpr bool s_IPOLBit = true; // Switch is connected to ground
+        static constexpr bool s_GPINTENBit = true;
+        static constexpr bool s_DEFVALBit = false;
+        static constexpr bool s_INTCONBit = false;
+        static constexpr bool s_GPPUBit = true;
+
+        static function<void(const bool)> s_callback;
+        
+        static void notify() __attribute__((always_inline))
+        {
+            s_callback(PinOnDevice::readINTCAP());
+        }
+    };
+
+    /**
     @brief Pin configuration class (Rotary encoder phase A generating the interrupt)
     @tparam PinOnDevice Register-level driver class for underlying physical pin on actual MCP23xxx device implementing static methods readINTCAP(), readGPIO() and writeOLAT(bool)
     @note Both rotary encoder phases A and B must be connected to the same MCP23xxx device
@@ -182,8 +214,7 @@ class MCP23xxx
         @tparam Callback Type of callback to be registered
         @param callback Callback to be registered
         */
-        template <typename Callback>
-        static void registerCallback(Callback&& callback)
+        static void registerCallback(auto&& callback)
         {
             s_callback = callback;
         }
@@ -242,6 +273,10 @@ class MCP23xxx
 // Static initialization
 template <typename PinOnDevice>
 function<void()> MCP23xxx::Pin<PinOnDevice, MCP23xxxPinType::SWITCH>::s_callback;
+
+// Static initialization
+template <typename PinOnDevice>
+function<void(const bool)> MCP23xxx::Pin<PinOnDevice, MCP23xxxPinType::SWITCH_TOGGLE>::s_callback;
 
 // Static initialization
 template <typename PinOnDevice>
