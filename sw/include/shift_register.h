@@ -36,7 +36,7 @@ class ShiftRegister
     @brief Get the width of the shift register
     @result Number of bytes
     */
-    static constexpr uint8_t getNofBytes()
+    static consteval uint8_t getNofBytes()
     {
         return t_nofBytes;
     }
@@ -92,7 +92,7 @@ class ShiftRegister<SPIMaster, SSPin, 1>
     @brief Get the number of daisy-chained 74HC595 devices
     @result Number of daisy-chained devices
     */
-    static constexpr uint8_t getNofBytes()
+    static consteval uint8_t getNofBytes()
     {
         return 1;
     }
